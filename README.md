@@ -39,4 +39,4 @@ GLFW is linked automatically against the main project. This works without requir
     ```
 # Demo
 
-![image](https://github.com/De-Par/3D_PHYSICS_ENGINE/blob/main/images/demo.png)
+![image](https://github.com/De-Par/3D_PHYSICS_ENGINE/blob/main/images/demonstartion.png)
