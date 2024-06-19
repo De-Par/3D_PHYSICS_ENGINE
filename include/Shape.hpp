@@ -1,12 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <glad/glad.h>
-#include <unordered_map>
-#include <utility>
-#include <bits/stdc++.h>
 #include <glm/vec3.hpp>
-#include <Shader.hpp>
 
 namespace gra {
     // enum ShapeType

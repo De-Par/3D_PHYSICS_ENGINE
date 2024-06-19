@@ -1,4 +1,4 @@
-#version 330 core
+﻿#version 330 core
 out vec4 FragColor;
 
 uniform sampler2D specTex;
@@ -8,13 +8,13 @@ in vec3 fragnormal;
 in vec3 camPos;
 in mat4 viewMat;
 
-vec3 lightPos = vec3(0.0, 10.0, 0.0);
+vec3 lightPos = vec3(0.0, 100.0, 0.0);
 const vec3 lightColor = vec3(1.0, 1.0, 1.0);
-const float lightPower = 100.0;
+const float lightPower = 2000.0;
 const vec3 ambientColor = vec3(0.1, 0.0, 0.0);
 const vec3 diffuseColor = vec3(0.5, 0.0, 0.0);
 const vec3 specColor = vec3(1.0, 1.0, 1.0);
-const float shininess = 20.0;
+const float shininess = 50.0;
 const float screenGamma = 2.2; // Assume the monitor is calibrated to the sRGB color space
 
 void main()
