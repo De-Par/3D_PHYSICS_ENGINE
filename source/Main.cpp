@@ -15,6 +15,7 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "GUI_Parameters.hpp"
+#include "Helpers.hpp"
 
 using namespace gra;
 
@@ -22,7 +23,7 @@ GUI_Parameters guiParameters;
 
 unsigned int WIDTH = 800;
 unsigned int HEIGHT = 600;
-float targetFPS = 1/60.0;
+constexpr unsigned int kTargetFps = 60;
 
 glm::vec3 Position = glm::vec3(0.0f, 0.0f, 10.0f);
 glm::vec3 Orientation = glm::vec3(0.0f, 0.0f, -1.0f);
@@ -37,7 +38,8 @@ Shader* shader;
 
 bool firstClick = true;
 
-Camera mainCamera(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f), WIDTH, HEIGHT, 300.0f, 0.1f, 60.0f);
+Camera mainCamera(glm::vec3(0.0f, 3.0f, 10.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f), WIDTH,
+                  HEIGHT, 300.0f, 0.1f, 60.0f);
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void mouse_scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -46,7 +48,8 @@ void processInput(GLFWwindow *window);
 void window_size_callback(GLFWwindow* window, int width, int height);
 void processCamera(GLFWwindow *window, Camera* camera);
 
-void setColor(const std::shared_ptr<Mesh>& mesh, v3 col) {
+void setColor(const std::shared_ptr<Mesh>& mesh, v3 col)
+{
     mesh->specularTexture = new Texture(glm::vec4(col.x, col.y, col.z, 1.0));
     mesh->updateBuffers();
 }
@@ -71,6 +74,19 @@ void guiSetup(GLFWwindow* window, ImGuiIO& io) {
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
     ImGui::End();
     ImGui::Render();
+}
+
+void DrawScene()
+{
+	/*constexpr auto block_size = 1.0;
+    auto color_dark = glm::vec4(0.5, 0.5, 0.5, 1.0);*/
+
+	auto color_white = glm::vec4(1, 1, 1, 1.0);
+    auto scene_obj = helpers::CreateMeshHelper("scene.obj", shader);
+    scene_obj->x = glm::vec3(0, -0.1, 0);
+    scene_obj->setColor(color_white);
+    scene_obj->isStatic = true;
+    scene.addMesh(scene_obj);
 }
 
 int main() {
@@ -116,51 +132,51 @@ int main() {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
 
-    shader = new Shader("../shaders/vert3d.vs", "../shaders/frag3d.fs");
+    shader = helpers::CreateShaderHelper("newshader");
 
-    std::shared_ptr<RigidBody> obj = std::make_shared<RigidBody>("../models/sphere.obj", *shader);
-    // std::shared_ptr<RigidBody> obj2 = std::make_shared<RigidBody>("../cubemesh.obj", *shader);
-    obj->x = glm::vec3(0.0,-3.0,0.0);
+    DrawScene();
+
+    /*std::shared_ptr<RigidBody> obj = std::make_shared<RigidBody>((kModelFolder + "cube.obj").c_str(), *shader);
+    obj->x = glm::vec3(0.0,0.0,0.0);
     obj->setColor(glm::vec4(0.1, 0.3, 0.6, 1.0));
-    // obj2->x = glm::vec3(0.0,2.0,0.0);
-    // obj->isStatic = true;
-    // setColor(obj2, v3(0.0, 1.0, 0.5)); 
-    // obj2->x = glm::vec3(0.0,0.0,0.0);
-    // obj2->isStatic = true;
+
+     std::shared_ptr<RigidBody> obj2 = std::make_shared<RigidBody>((kModelFolder + "sphere.obj").c_str(), *shader);
+     setColor(obj2, v3(0.0, 1.0, 0.5)); 
+     obj2->x = glm::vec3(10.0,10.0,10.0);
+     obj2->isStatic = true;
 
     scene.addMesh(obj);
-    // scene.addMesh(obj2);
+	scene.addMesh(obj2);*/
     detector.addScene(scene);
 
     glEnable(GL_DEPTH_TEST);
     // This is the render loop
-    float lastFrameTime = 0.0f;
-    float delta = 0.0f;
-    float timeSum = 0.0f;
+    double last_frame_time = 0.0f;
 
-    while (!glfwWindowShouldClose(window)) {
+    while (!glfwWindowShouldClose(window)) 
+    {
         guiSetup(window, io);
 
-        auto currentTime = (float)glfwGetTime();
-        delta = currentTime- lastFrameTime;
-        lastFrameTime = currentTime;
-        timeSum += delta;
-        if (timeSum >= targetFPS) {
+        const auto current_time = glfwGetTime();
+        const auto delta = current_time - last_frame_time;
+        if (delta >= 1.0 / kTargetFps) 
+        {
+            last_frame_time = current_time;
             // Clear the screen
             glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             mainCamera.proccessWindow(window);
             mainCamera.setShaderValues(shader);
-        
-            timeSum = 0;
+
             
-            scene.simulatePhysics(targetFPS);
+            scene.simulatePhysics(1.0 / (kTargetFps) );
             scene.drawScene();
 
-            // for(int i = 0; i < scene.meshes.size(); i++){
-            //     scene.meshes[i]->applyForce(glm::vec3(0.0, -9.8, 0.0));
-            // }
+			for (int i = 0; i < scene.meshes.size(); i++)
+			{
+				scene.meshes[i]->applyForce(glm::vec3(0.0, -9.8, 0.0));
+			}
             detector.detectCollisions();
 
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -213,7 +229,7 @@ void mouse_scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
     if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
-        std::shared_ptr<RigidBody> obj2 = std::make_shared<RigidBody>("../sphere.obj", *shader);
+        std::shared_ptr<RigidBody> obj2 = helpers::CreateMeshHelper("cube.obj", shader);
         obj2->x = mainCamera.worldPosition + glm::normalize(mainCamera.viewDirection);
         obj2->v = glm::normalize(mainCamera.viewDirection)*8.0f;
         setColor(obj2, v3(0.1, 0.8, 0.9)); 
