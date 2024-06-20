@@ -37,6 +37,3 @@ GLFW is linked automatically against the main project. This works without requir
     ```bash
     sudo apt-get install xorg-dev libglu1-mesa-dev
     ```
-# Demo
-
-![image](https://github.com/De-Par/3D_PHYSICS_ENGINE/blob/main/images/demonstartion.png)
